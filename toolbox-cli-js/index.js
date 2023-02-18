@@ -23,7 +23,15 @@ program
       return
     }
     // Clone the repository
-    shell.exec(`git clone ${repo}`)
+    const { code, stderr } = shell.exec(`git clone ${repo}`)
+
+    if (Number(code) > 0) {
+      console.log(`
+        项目拉取失败，可尝试多次敲打init命令，或使用映射git地址拉取
+        ${stderr}
+      `)
+      return
+    }
 
     // Ask the user for configuration information
     const {
