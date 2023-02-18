@@ -1,0 +1,5 @@
+const express = require('express')
+const app = express()
+const { port } = require('./config')
+app.use('/', require('./service'))
+app.listen(port)

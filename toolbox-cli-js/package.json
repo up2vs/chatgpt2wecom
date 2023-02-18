@@ -1,0 +1,18 @@
+{
+  "name": "toolbox-cli-js",
+  "version": "1.0.18",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "toolbox-cli-js": "index.js"
+  },
+  "scripts": {},
+  "author": "streetlight3316",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^10.0.0",
+    "fs": "^0.0.1-security",
+    "inquirer": "^8.0.0",
+    "shelljs": "^0.8.5"
+  }
+}
