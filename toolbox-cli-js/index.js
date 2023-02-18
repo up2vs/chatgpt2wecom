@@ -10,6 +10,14 @@ program
   .command('init')
   .description('Initialize toolbox-cli-js with a Git repository')
   .action(async () => {
+    if (process && process.version && process.version.replace('v', '').split('.')[0] < 18) {
+      console.log(`
+        您当前 Node 版本号为：${process.version}[${process.version.split('.')[0]}]
+        请使用 Node 18.0 及以上版本后进行下一步操作
+        您将无法正常使用ChatGPT服务
+      `)
+      return
+    }
     if (!shell.which('git')) {
       console.log('Git 未安装或未配置到系统的 PATH 环境变量中')
       return
