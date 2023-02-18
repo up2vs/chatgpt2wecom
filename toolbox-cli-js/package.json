@@ -1,6 +1,6 @@
 {
   "name": "toolbox-cli-js",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "description": "",
   "main": "index.js",
   "bin": {
@@ -12,8 +12,8 @@
   "dependencies": {
     "commander": "^10.0.0",
     "fs": "^0.0.1-security",
-    "git-clone": "^0.2.0",
     "inquirer": "^8.0.0",
+    "nodegit": "^0.27.0",
     "shelljs": "^0.8.5"
   }
 }
