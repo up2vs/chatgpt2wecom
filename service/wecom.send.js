@@ -30,7 +30,7 @@ router.all('/wecom/send', async ({ query: { string, user, type } }, response) =>
         msgtype: type,
         agentid: wecomAgentId,
         text: {
-          content: data.choices[0].text
+          content: data.choices[0].text.trim()
         }
       }
     )
