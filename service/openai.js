@@ -53,13 +53,13 @@ router.all('/openai', async ({ query: { string } }, response) => {
       response.send({
         choices: [
           {
-            text: error.message + `[已为您切换新的apiKey,请重新请求]`
+            message: { content: error.message + `[已为您切换新的apiKey,请重新请求]` }
           }
         ]
       })
     } else {
       response.send({
-        choices: [{ text: error }]
+        choices: [{ message: { content: error } }]
       })
     }
   }
