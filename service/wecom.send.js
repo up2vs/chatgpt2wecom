@@ -20,7 +20,7 @@ router.all('/wecom/send', async ({ query: { string, user, type } }, response) =>
       )
       localStorage.setItem('access_token', access_token)
     }
-    const { data } = await axios.get(`${TOOLBOX_BASE_URL}/chatgpt?string=${string}`)
+    const { data } = await axios.get(`${TOOLBOX_BASE_URL}/openai?string=${string}`)
     console.log(`Reply content: ${data.choices[0].text}`)
     console.log(`Access Token: ${localStorage.access_token}`)
     const status = await axios.post(
