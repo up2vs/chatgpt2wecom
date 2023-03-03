@@ -10,6 +10,8 @@ router.all('/openai', async ({ query: { string } }, response) => {
   let apiKey = ''
   let messages = []
 
+  console.log(`Get string: ${string}`)
+
   try {
     keychain = require('../config/keychain')
     if (localStorage.openAIKey) {
@@ -42,6 +44,7 @@ router.all('/openai', async ({ query: { string } }, response) => {
       choices: completion.data.choices
     })
   } catch (error) {
+    console.log(`Error is ${error}`)
     if (['Error'].includes(error.name) && keychain) {
       let newAIKey = ''
       if (!keychain.includes(apiKey) || keychain.indexOf(apiKey) + 1 >= keychain.length) {
