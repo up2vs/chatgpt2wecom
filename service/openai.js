@@ -59,7 +59,7 @@ router.all('/openai', async ({ query: { string } }, response) => {
       })
     } else {
       response.send({
-        choices: [{ message: { content: error } }]
+        choices: [{ message: { content: JSON.stringify(error) } }]
       })
     }
   }
