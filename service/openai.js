@@ -6,22 +6,15 @@ const { openAIKey } = require('../config')
 const { Configuration, OpenAIApi } = require('openai')
 
 router.all('/openai', async ({ query: { string } }, response) => {
-  let keychain = ''
+  let keychain = openAIKey.split(',')
   let apiKey = ''
   let messages = []
 
-  console.log(`Get string: ${string}`)
-
-  try {
-    keychain = require('../config/keychain')
-    if (localStorage.openAIKey) {
-      apiKey = localStorage.openAIKey
-    } else {
-      apiKey = keychain[0]
-      localStorage.setItem('openAIKey', apiKey)
-    }
-  } catch {
-    apiKey = openAIKey
+  if (localStorage.openAIKey) {
+    apiKey = localStorage.openAIKey
+  } else {
+    apiKey = keychain[0]
+    localStorage.setItem('openAIKey', apiKey)
   }
 
   if (localStorage.messages) {
@@ -44,8 +37,7 @@ router.all('/openai', async ({ query: { string } }, response) => {
       choices: completion.data.choices
     })
   } catch (error) {
-    console.log(`Error is ${error}`)
-    if (['Error'].includes(error.name) && keychain) {
+    if ([429, 401].includes(error?.response?.status)) {
       let newAIKey = ''
       if (!keychain.includes(apiKey) || keychain.indexOf(apiKey) + 1 >= keychain.length) {
         newAIKey = keychain[0]
@@ -56,7 +48,11 @@ router.all('/openai', async ({ query: { string } }, response) => {
       response.send({
         choices: [
           {
-            message: { content: error.message + `[已为您切换新的apiKey,请重新请求]` }
+            message: {
+              content: `${error.response.status} ${
+                error.response.statusText
+              } [已切换至openAIKey:${newAIKey.slice(0, 10)}]`
+            }
           }
         ]
       })

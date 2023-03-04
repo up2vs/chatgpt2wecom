@@ -12,7 +12,6 @@ const router = express.Router()
 
 router.all('/wecom/send', async ({ query: { string, user, type } }, response) => {
   try {
-    console.log(`Wecom Send`)
     if (!localStorage.access_token) {
       const {
         data: { access_token }

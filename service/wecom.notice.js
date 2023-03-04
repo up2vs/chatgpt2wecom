@@ -11,7 +11,6 @@ router.all(
   xmlparser({ trim: true, explicitArray: false }),
   async ({ query: { msg_signature, timestamp, nonce, echostr }, body: { xml } }, response) => {
     try {
-      console.log('Start')
       if (echostr) {
         const signature = getSignature(wecomToken, timestamp, nonce, echostr)
         if (signature !== msg_signature) {

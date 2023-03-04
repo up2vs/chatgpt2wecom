@@ -123,7 +123,7 @@ wecomToken: 'Token', // 企业微信应用 token
 wecomEncodingAESKey: 'KXJ1askbWOdMrMR8kDPuUKi8hF7MwoXym8888888888', // 企业微信应用 encodingAESKey
 wecomCorpid: 'wwee0f1adfac012345', // 企业微信应用 corp_id
 wecomSecret: 'M53AM9o6G5YhB7jOrKj52sJj4djRD8tnrL2uoB12345', // 企业微信应用 app_secret
-openAIKey: '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', // openAIKey
+openAIKey: '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,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', // openAIKey 支持多条传入,请使用逗号","分隔。遇到余额不足、Too Many Requests等异常提示自动切换
 ```
 
 #### 未来计划 📆
