@@ -6,46 +6,32 @@ const { openAIKey } = require('../config')
 const { Configuration, OpenAIApi } = require('openai')
 
 router.all('/openai', async ({ query: { string, user } }, response) => {
-  let keychain = openAIKey.split(',')
   let apiKey = ''
-  let messages = []
-  let new_conversation = false
-  if (string.match(/^###/)) {
-    if (localStorage[`${user}_conversation_id`]) {
-      localStorage.removeItem(`${user}_conversation_id`)
-      if (string == '###') {
-        response.send({
-          choices: [{ message: { content: '会话已结束' } }]
-        })
-        return;
-      }
-    }
-    new_conversation = true //保持会话
-    string = string.replace(/^###/, '')
-  }
-  if (string == '') {
-    response.send({
-      choices: [{ message: { content: '你和我聊什么?' } }]
-    })
-    return;
-  }
+  let keychain = openAIKey.split(',')
   if (localStorage.openAIKey) {
     apiKey = localStorage.openAIKey
   } else {
     apiKey = keychain[0]
     localStorage.setItem('openAIKey', apiKey)
   }
-  let msg_row = { role: 'user', content: string }
-  messages.push(msg_row)
 
+  let messages = []
+  let user_conversation = localStorage[`${user}_conversation`] //用户会话
+  if (user_conversation) {
+    user_conversation = user_conversation.slice(-500) //limit 500
+    messages.concat(user_conversation)
+  }
+  let role = 'user'
+  if (string.match(/^(假如|你现在|现在你|比如|假设)/)) {
+    role = 'system'
+  }
+  let msg_row = { role, content: string }
+  messages.push(msg_row)
   let completionObject = {
     model: 'gpt-3.5-turbo',
     messages,
     user,
     max_tokens: 1200
-  }
-  if (localStorage[`${user}_conversation_id`]) {
-    completionObject['conversation_id'] = localStorage[`${user}_conversation_id`]
   }
   console.log('completionObject:', completionObject)
   try {
@@ -54,10 +40,9 @@ router.all('/openai', async ({ query: { string, user } }, response) => {
     })
     const openai = new OpenAIApi(configuration)
     const completion = await openai.createChatCompletion(completionObject)
-    console.log('completion response:', completion)
-    if (new_conversation && completion.data && completion.data.conversation_id) {
-      localStorage.setItem(`${user}__conversation_id`, completion.data.conversation_id)
-    }
+    console.log('completion response:', completion.data)
+    messages.push(completion.data.choices[0].message)
+    localStorage.setItem(`${user}__conversation_id`, messages) //保持会话
     response.send({
       choices: completion.data.choices
     })
