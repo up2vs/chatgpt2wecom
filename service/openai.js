@@ -1,7 +1,6 @@
 const { openAIKey } = require('../config')
 const { Configuration, OpenAIApi } = require('openai')
-
-import { createClient } from 'redis';
+const { createClient } = require('redis')
 
 const touchOpenAI = async function (content, user) {
   let messages = []

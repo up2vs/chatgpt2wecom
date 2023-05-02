@@ -1,6 +1,6 @@
 const express = require('express')
 import { touchOpenAI } from 'openai.js'
-import { createClient } from 'redis';
+const { createClient } = require('redis')
 
 const {
   wecomAgentId,
