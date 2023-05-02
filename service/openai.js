@@ -46,7 +46,7 @@ const touchOpenAI = async function (content, user) {
     await redisclient.disconnect();
     return completion.data.choices[0].message.content
   } catch (error) {
-    await redisclient.disconnect();
+    // await redisclient.disconnect();
     return error.message
   }
 }
