@@ -35,9 +35,10 @@ const touchOpenAI = async function (content, user) {
     model: 'gpt-3.5-turbo',
     messages,
     user,
-    max_tokens: 4000
+    // max_tokens: 4000
   }
   console.log('completionObject:', completionObject)
+  let reply_message = null
   try {
     const configuration = new Configuration({
       apiKey: openAIKey
@@ -45,20 +46,20 @@ const touchOpenAI = async function (content, user) {
     const openai = new OpenAIApi(configuration)
     const completion = await openai.createChatCompletion(completionObject)
     console.log('completion response:', completion.data)
-    const reply_message = completion.data.choices[0].message
-    if (reply_message && reply_message.content) {
-      messages.push(reply_message)
-      await redisclient.set(`${user}_conversation`, JSON.stringify(messages)) //保持会话
-      await redisclient.disconnect();
-      return reply_message.content
-    } else {
-      return '请重复'
-    }
+    reply_message = completion.data.choices[0].message
   } catch (error) {
-    console.log(error)
-    await redisclient.set(`${user}_conversation`, null) //重置会话
+    console.info(error)
+  }
+  if (reply_message && reply_message.content) {
+    messages.push(reply_message)
+    await redisclient.set(`${user}_conversation`, JSON.stringify(messages)) //保持会话
     await redisclient.disconnect();
-    return '请重复'
+    return reply_message.content
+  } else {
+    await redisclient.set(`${user}_conversation`, null) //保持会话
+    await redisclient.disconnect();
+    // return error.message
+    return `${error.message}|请重复你的问题`
   }
 }
 
