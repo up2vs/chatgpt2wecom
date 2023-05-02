@@ -23,26 +23,36 @@ router.all('/openai', async ({ query: { string, user } }, response) => {
     new_conversation = true //保持会话
     string = string.replace(/^###/, '')
   }
+  if (string == '') {
+    response.send({
+      choices: [{ message: { content: '你和我聊什么?' } }]
+    })
+  }
   if (localStorage.openAIKey) {
     apiKey = localStorage.openAIKey
   } else {
     apiKey = keychain[0]
     localStorage.setItem('openAIKey', apiKey)
   }
-  let msg_row = { role: 'user', content: string, max_tokens: 1200, user }
-  if (localStorage[`${user}_conversation_id`]) {
-    msg_row['conversation_id'] = localStorage[`${user}_conversation_id`]
-  }
+  let msg_row = { role: 'user', content: string }
   messages.push(msg_row)
+
+  let completionObject = {
+    model: 'gpt-3.5-turbo',
+    messages,
+    user,
+    max_tokens: 1200
+  }
+  if (localStorage[`${user}_conversation_id`]) {
+    completionObject['conversation_id'] = localStorage[`${user}_conversation_id`]
+  }
+  console.log('completionObject:', completionObject)
   try {
     const configuration = new Configuration({
       apiKey
     })
     const openai = new OpenAIApi(configuration)
-    const completion = await openai.createChatCompletion({
-      model: 'gpt-3.5-turbo',
-      messages
-    })
+    const completion = await openai.createChatCompletion(completionObject)
     if (new_conversation && completion.data && completion.data.conversation_id) {
       localStorage.setItem(`${user}__conversation_id`, completion.data.conversation_id)
     }
