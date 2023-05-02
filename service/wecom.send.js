@@ -1,5 +1,5 @@
 const express = require('express')
-import { touchOpenAI } from 'openai.js'
+const { touchOpenAI } = require('openai.js')
 const { createClient } = require('redis')
 
 const {
