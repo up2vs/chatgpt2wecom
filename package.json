@@ -14,7 +14,7 @@
     "chatgpt": "^4.4.0",
     "express": "^4.17.1",
     "express-xml-bodyparser": "^0.3.0",
-    "localStorage": "^1.0.4",
+    "redis": "latest",
     "nostr-tools": "^1.2.1",
     "openai": "^3.2.1",
     "pm2": "^5.2.2",

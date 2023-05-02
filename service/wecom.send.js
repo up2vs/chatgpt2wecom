@@ -1,5 +1,7 @@
 const express = require('express')
-const localStorage = require('localStorage')
+import { touchOpenAI } from 'openai.js'
+import { createClient } from 'redis';
+
 const {
   wecomAgentId,
   wecomCorpid,
@@ -12,19 +14,23 @@ const router = express.Router()
 
 router.all('/wecom/send', async ({ query: { string, user, type } }, response) => {
   try {
-    if (!localStorage.access_token) {
+    const redisclient = createClient();
+    redisclient.on('error', err => console.log('Redis Client Error', err));
+    await redisclient.connect();
+    const access_token = await client.get(`${wecomCorpid}_access_token`);
+    if (!access_token) {
       const {
         data: { access_token }
       } = await axios.get(
         `${WECOM_BASE_URL}/cgi-bin/gettoken?corpid=${wecomCorpid}&corpsecret=${wecomSecret}`
       )
-      localStorage.setItem('access_token', access_token)
+      await redisclient.set(`${wecomCorpid}_access_token`, access_token)
     }
-    console.log(`Access Token: ${localStorage.access_token}`)
-    const { data } = await axios.get(`${TOOLBOX_BASE_URL}/openai?string=${string}&user=${user}`)
-    console.log(`Reply content: ${data.choices[0].message.content.trim()}`)
+    console.log(`Access Token: ${access_token}`)
+    const message = await touchOpenAI(string, user)
+    console.log(`Reply content: ${message}`)
     const status = await axios.post(
-      `${WECOM_BASE_URL}/cgi-bin/message/send?access_token=${localStorage.access_token}`,
+      `${WECOM_BASE_URL}/cgi-bin/message/send?access_token=${access_token}`,
       {
         touser: user,
         msgtype: type,
@@ -36,11 +42,12 @@ router.all('/wecom/send', async ({ query: { string, user, type } }, response) =>
     )
     console.log(`Send Status: ${JSON.stringify(status.data)}`)
     if ([40014, 42201, 42001].includes(status.data.errcode)) {
-      localStorage.removeItem('access_token')
-      await axios.get(`${TOOLBOX_BASE_URL}/wecom/send?string=${string}&user=${user}&type=${type}`)
+      await redisclient.set(`${wecomCorpid}_access_token`, null)
     }
+    await redisclient.disconnect();
     response.send('')
   } catch (error) {
+    await redisclient.disconnect();
     console.log(error)
     response.send('')
   }
