@@ -14,7 +14,7 @@ const router = express.Router()
 
 router.all('/wecom/send', async ({ query: { string, user, type } }, response) => {
   try {
-    const redisclient = createClient(6379,'127.0.0.1');
+    const redisclient = createClient({ url: 'redis://127.0.0.1:6379' });
     redisclient.on('error', err => console.log('Redis Client Error', err));
     await redisclient.connect();
     const access_token = await client.get(`${wecomCorpid}_access_token`);

@@ -4,7 +4,7 @@ const { createClient } = require('redis')
 
 const touchOpenAI = async function (content, user) {
   let messages = []
-  const redisclient = createClient(6379,'127.0.0.1');
+  const redisclient = createClient({ url: 'redis://127.0.0.1:6379' });
   redisclient.on('error', err => console.log('Redis Client Error', err));
   await redisclient.connect();
   const user_conversation = await redisclient.get(`${wecomCorpid}_conversation`);
