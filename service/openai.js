@@ -27,6 +27,7 @@ router.all('/openai', async ({ query: { string, user } }, response) => {
     response.send({
       choices: [{ message: { content: '你和我聊什么?' } }]
     })
+    return;
   }
   if (localStorage.openAIKey) {
     apiKey = localStorage.openAIKey
