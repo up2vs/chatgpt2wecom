@@ -8,6 +8,7 @@ const touchOpenAI = async function (content, user) {
   redisclient.on('error', err => console.log('Redis Client Error', err));
   await redisclient.connect();
   let user_conversation = await redisclient.get(`${user}_conversation`);
+  console.log(user_conversation)
   if (user_conversation) {
     try {
       user_conversation = JSON.parse(user_conversation)
@@ -17,6 +18,7 @@ const touchOpenAI = async function (content, user) {
         user_conversation = user_conversation.slice(-500) //limit 500
       }
     } catch (error) {
+      console.log(JSON.stringify(error))
       user_conversation = []
     }
     messages.concat(user_conversation)
