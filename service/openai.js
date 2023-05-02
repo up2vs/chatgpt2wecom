@@ -53,6 +53,7 @@ router.all('/openai', async ({ query: { string, user } }, response) => {
     })
     const openai = new OpenAIApi(configuration)
     const completion = await openai.createChatCompletion(completionObject)
+    console.log('completion response:', completion)
     if (new_conversation && completion.data && completion.data.conversation_id) {
       localStorage.setItem(`${user}__conversation_id`, completion.data.conversation_id)
     }
