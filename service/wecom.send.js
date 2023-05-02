@@ -47,7 +47,7 @@ router.all('/wecom/send', async ({ query: { string, user, type } }, response) =>
     await redisclient.disconnect();
     response.send('')
   } catch (error) {
-    await redisclient.disconnect();
+    //await redisclient.disconnect();
     console.log(error)
     response.send('')
   }
