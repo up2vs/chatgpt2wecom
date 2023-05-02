@@ -26,7 +26,7 @@ router.all('/wecom/send', async ({ query: { string, user, type } }, response) =>
       )
       await redisclient.set(`${wecomCorpid}_access_token`, access_token)
     }
-    console.log(`Access Token: ${access_token}`)
+    console.log(`wx Access Token: ${access_token}`)
     const message = await touchOpenAI(string, user)
     console.log(`Reply content: ${message}`)
     const status = await axios.post(
@@ -36,7 +36,7 @@ router.all('/wecom/send', async ({ query: { string, user, type } }, response) =>
         msgtype: type,
         agentid: wecomAgentId,
         text: {
-          content: data.choices[0].message.content.trim()
+          content: message
         }
       }
     )

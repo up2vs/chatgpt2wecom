@@ -41,12 +41,17 @@ const touchOpenAI = async function (content, user) {
     const openai = new OpenAIApi(configuration)
     const completion = await openai.createChatCompletion(completionObject)
     console.log('completion response:', completion.data)
-    messages.push(completion.data.choices[0].message)
-    await redisclient.set(`${user}_conversation`, JSON.stringify(messages)) //保持会话
-    await redisclient.disconnect();
-    return completion.data.choices[0].message.content
+    const reply_message = completion.data.choices[0].message
+    if (reply_message && reply_message.content) {
+      messages.push(reply_message)
+      await redisclient.set(`${user}_conversation`, JSON.stringify(messages)) //保持会话
+      await redisclient.disconnect();
+      return reply_message.content
+    } else {
+      return '请重复你的问题'
+    }
   } catch (error) {
-    // await redisclient.disconnect();
+
     return error.message
   }
 }
