@@ -1,5 +1,5 @@
 const express = require('express')
-const { touchOpenAI } = require('./openai.js')
+const touchOpenAI = require('./openai.js')
 const { createClient } = require('redis')
 
 const {
@@ -46,7 +46,7 @@ router.all('/wecom/send', async ({ query: { string, user, type } }, response) =>
     }
     await redisclient.disconnect();
     response.send('')
-  } catch (error) { 
+  } catch (error) {
     //await redisclient.disconnect();
     console.log(error)
     response.send('')
