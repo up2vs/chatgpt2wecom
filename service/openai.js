@@ -5,23 +5,35 @@ const localStorage = require('localStorage')
 const { openAIKey } = require('../config')
 const { Configuration, OpenAIApi } = require('openai')
 
-router.all('/openai', async ({ query: { string } }, response) => {
+router.all('/openai', async ({ query: { string, user } }, response) => {
   let keychain = openAIKey.split(',')
   let apiKey = ''
   let messages = []
-
+  let new_conversation = false
+  if (string.match(/^###/)) {
+    if (localStorage[`${user}_conversation_id`]) {
+      localStorage.removeItem(`${user}_conversation_id`)
+      if (string == '###') {
+        response.send({
+          choices: [{ message: { content: '会话已结束' } }]
+        })
+        return;
+      }
+    }
+    new_conversation = true //保持会话
+    string = string.replace(/^###/, '')
+  }
   if (localStorage.openAIKey) {
     apiKey = localStorage.openAIKey
   } else {
     apiKey = keychain[0]
     localStorage.setItem('openAIKey', apiKey)
   }
-
-  if (localStorage.messages) {
-    messages = JSON.parse(localStorage.messages)
+  let msg_row = { role: 'user', content: string, max_tokens: 1200, user }
+  if (localStorage[`${user}_conversation_id`]) {
+    msg_row['conversation_id'] = localStorage[`${user}_conversation_id`]
   }
-
-  messages.push({ role: 'user', content: string })
+  messages.push(msg_row)
   try {
     const configuration = new Configuration({
       apiKey
@@ -31,49 +43,16 @@ router.all('/openai', async ({ query: { string } }, response) => {
       model: 'gpt-3.5-turbo',
       messages
     })
-    messages.push(completion.data.choices[0].message)
-    localStorage.setItem('messages', JSON.stringify(messages))
+    if (new_conversation && completion.data && completion.data.conversation_id) {
+      localStorage.setItem(`${user}__conversation_id`, completion.data.conversation_id)
+    }
     response.send({
       choices: completion.data.choices
     })
   } catch (error) {
-    if ([429, 401].includes(error?.response?.status)) {
-      let newAIKey = ''
-      if (!keychain.includes(apiKey) || keychain.indexOf(apiKey) + 1 >= keychain.length) {
-        newAIKey = keychain[0]
-      } else {
-        newAIKey = keychain[keychain.indexOf(apiKey) + 1]
-      }
-      localStorage.setItem('openAIKey', newAIKey)
-      response.send({
-        choices: [
-          {
-            message: {
-              content: `${error.response.status} ${
-                error.response.statusText
-              } [已切换至openAIKey:${newAIKey.slice(0, 10)}]`
-            }
-          }
-        ]
-      })
-    } else if ([400].includes(error?.response?.status)) {
-      localStorage.setItem('messages', JSON.stringify([]))
-      response.send({
-        choices: [
-          {
-            message: {
-              content: `${error.response.status} ${
-                error.response.statusText
-              } [已为您开启新的会话]`
-            }
-          }
-        ]
-      })
-    } else {
-      response.send({
-        choices: [{ message: { content: JSON.stringify(error) } }]
-      })
-    }
+    response.send({
+      choices: [{ message: { content: JSON.stringify(error) } }]
+    })
   }
 })
 
