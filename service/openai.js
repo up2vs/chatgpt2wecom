@@ -42,7 +42,7 @@ router.all('/openai', async ({ query: { string, user } }, response) => {
     const completion = await openai.createChatCompletion(completionObject)
     console.log('completion response:', completion.data)
     messages.push(completion.data.choices[0].message)
-    localStorage.setItem(`${user}__conversation_id`, messages) //保持会话
+    localStorage.setItem(`${user}_conversation`, messages) //保持会话
     response.send({
       choices: completion.data.choices
     })
