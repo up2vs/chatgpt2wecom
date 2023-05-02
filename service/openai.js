@@ -36,7 +36,7 @@ const touchOpenAI = async function (content, user) {
   console.log('completionObject:', completionObject)
   try {
     const configuration = new Configuration({
-      openAIKey
+      apiKey: openAIKey
     })
     const openai = new OpenAIApi(configuration)
     const completion = await openai.createChatCompletion(completionObject)
