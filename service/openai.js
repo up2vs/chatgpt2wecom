@@ -25,8 +25,9 @@ const touchOpenAI = async function (content, user) {
     messages = messages.concat(user_conversation)
   }
   let role = 'user'
-  if (content.match(/^(假如|你现在|现在你|比如|假设)/)) {
+  if (content.match(/^(假如你|你现在|现在你|比如你|假设你)/)) {
     role = 'system'
+    messages = []
   }
   let msg_row = { role, content }
   messages.push(msg_row)
