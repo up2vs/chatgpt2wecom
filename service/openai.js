@@ -1,31 +1,32 @@
-const express = require('express')
-const router = express.Router()
-const localStorage = require('localStorage')
-
 const { openAIKey } = require('../config')
 const { Configuration, OpenAIApi } = require('openai')
 
-router.all('/openai', async ({ query: { string, user } }, response) => {
-  let apiKey = ''
-  let keychain = openAIKey.split(',')
-  if (localStorage.openAIKey) {
-    apiKey = localStorage.openAIKey
-  } else {
-    apiKey = keychain[0]
-    localStorage.setItem('openAIKey', apiKey)
-  }
+import { createClient } from 'redis';
 
+const touchOpenAI = async function (content, user) {
   let messages = []
-  let user_conversation = localStorage[`${user}_conversation`] //用户会话
+  const redisclient = createClient();
+  redisclient.on('error', err => console.log('Redis Client Error', err));
+  await redisclient.connect();
+  const user_conversation = await redisclient.get(`${wecomCorpid}_conversation`);
   if (user_conversation) {
-    user_conversation = user_conversation.slice(-500) //limit 500
+    try {
+      user_conversation = JSON.parse(user_conversation)
+      if (!user_conversation || !user_conversation.length) {
+        user_conversation = []
+      } else {
+        user_conversation = user_conversation.slice(-500) //limit 500
+      }
+    } catch (error) {
+      user_conversation = []
+    }
     messages.concat(user_conversation)
   }
   let role = 'user'
-  if (string.match(/^(假如|你现在|现在你|比如|假设)/)) {
+  if (content.match(/^(假如|你现在|现在你|比如|假设)/)) {
     role = 'system'
   }
-  let msg_row = { role, content: string }
+  let msg_row = { role, content }
   messages.push(msg_row)
   let completionObject = {
     model: 'gpt-3.5-turbo',
@@ -36,21 +37,19 @@ router.all('/openai', async ({ query: { string, user } }, response) => {
   console.log('completionObject:', completionObject)
   try {
     const configuration = new Configuration({
-      apiKey
+      openAIKey
     })
     const openai = new OpenAIApi(configuration)
     const completion = await openai.createChatCompletion(completionObject)
     console.log('completion response:', completion.data)
     messages.push(completion.data.choices[0].message)
-    localStorage.setItem(`${user}_conversation`, messages) //保持会话
-    response.send({
-      choices: completion.data.choices
-    })
+    await redisclient.set(`${user}_conversation`, JSON.stringify(messages)) //保持会话
+    await redisclient.disconnect();
+    return completion.data.choices[0].message.content
   } catch (error) {
-    response.send({
-      choices: [{ message: { content: error.message } }]
-    })
+    await redisclient.disconnect();
+    return error.message
   }
-})
+}
 
-module.exports = router
+module.exports = touchOpenAI
