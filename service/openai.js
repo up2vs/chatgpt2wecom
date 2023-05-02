@@ -35,7 +35,7 @@ const touchOpenAI = async function (content, user) {
     model: 'gpt-3.5-turbo',
     messages,
     user,
-    max_tokens: 1200
+    max_tokens: 4000
   }
   console.log('completionObject:', completionObject)
   try {
@@ -52,11 +52,13 @@ const touchOpenAI = async function (content, user) {
       await redisclient.disconnect();
       return reply_message.content
     } else {
-      return '请重复你的问题'
+      return '请重复'
     }
   } catch (error) {
-
-    return error.message
+    console.log(error)
+    await redisclient.set(`${user}_conversation`, null) //重置会话
+    await redisclient.disconnect();
+    return '请重复'
   }
 }
 
