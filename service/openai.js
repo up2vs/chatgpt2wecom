@@ -2,9 +2,10 @@ const { openAIKey } = require('../config')
 const { Configuration, OpenAIApi } = require('openai')
 const { createClient } = require('redis')
 
-const touchOpenAI = async function (content, user) {
-  console.log('touch openai content:' + content)
-  let messages = [] 
+const touchOpenAI = async function (user_message, user) {
+  console.log('touch openai user_message:' + user_message)
+  console.log(typeof user_message)
+  let messages = []
   const redisclient = createClient({ url: 'redis://127.0.0.1:6379' });
   redisclient.on('error', err => console.log('Redis Client Error', err));
   await redisclient.connect();
@@ -26,11 +27,11 @@ const touchOpenAI = async function (content, user) {
     messages = messages.concat(user_conversation)
   }
   let role = 'user'
-  if (content.match(/^(假如你|你现在|现在你|比如你|假设你)/)) {
+  if (user_message.match(/^(假如你|你现在|现在你|比如你|假设你)/)) {
     role = 'system'
     messages = []
   }
-  let msg_row = { role, content }
+  let msg_row = { role, content: user_message }
   messages.push(msg_row)
   let completionObject = {
     model: 'gpt-3.5-turbo',
