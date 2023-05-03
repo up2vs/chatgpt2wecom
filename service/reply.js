@@ -10,10 +10,11 @@ const {
 const axios = require('axios')
 const do_reply = async function (user_message, user, type, reply_message_cache) {
   try {
-    if (!redisUrl) {
-      redisUrl = 'redis://127.0.0.1:6379'
+    let redisURL = redisUrl
+    if (!redisURL) {
+      redisURL = 'redis://127.0.0.1:6379'
     }
-    const redisclient = createClient({ url: redisUrl });
+    const redisclient = createClient({ url: redisURL });
     redisclient.on('error', err => console.log('Redis Client Error', err));
     await redisclient.connect();
     let access_token = await redisclient.get(`${wecomCorpid}_access_token`);

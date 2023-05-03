@@ -6,10 +6,11 @@ const touchOpenAI = async function (user_message, user) {
   console.log('touch openai user_message:' + user_message)
 
   let messages = []
-  if (!redisUrl) {
-    redisUrl = 'redis://127.0.0.1:6379'
+  let redisURL = redisUrl
+  if (!redisURL) {
+    redisURL = 'redis://127.0.0.1:6379'
   }
-  const redisclient = createClient({ url: redisUrl });
+  const redisclient = createClient({ url: redisURL });
   redisclient.on('error', err => console.log('Redis Client Error', err));
   await redisclient.connect();
   let user_conversation = await redisclient.get(`${user}_conversation`);
