@@ -12,7 +12,7 @@ const {
 const axios = require('axios')
 const router = express.Router()
 
-router.all('/wecom/send', async ({ query: { string, user, type } }, response) => {
+router.all('/wecom/send', async ({ query: { string, user, type, retry } }, response) => {
   try {
     const redisclient = createClient({ url: 'redis://127.0.0.1:6379' });
     redisclient.on('error', err => console.log('Redis Client Error', err));
@@ -25,6 +25,7 @@ router.all('/wecom/send', async ({ query: { string, user, type } }, response) =>
         `${WECOM_BASE_URL}/cgi-bin/gettoken?corpid=${wecomCorpid}&corpsecret=${wecomSecret}`
       )
       await redisclient.set(`${wecomCorpid}_access_token`, access_token)
+      await redisclient.expire(`${wecomCorpid}_access_token`, 60 * 60 * 1.8)
     }
     console.log(`wx Access Token: ${access_token}`)
     const message = await touchOpenAI(string, user)
@@ -41,8 +42,13 @@ router.all('/wecom/send', async ({ query: { string, user, type } }, response) =>
       }
     )
     console.log(`Send Status: ${JSON.stringify(status.data)}`)
-    if ([40014, 42201, 42001].includes(status.data.errcode)) {
-      await redisclient.set(`${wecomCorpid}_access_token`, null)
+    if ([40014, 42201, 42001, 42009, 42007].includes(status.data.errcode)) {
+      await redisclient.del(`${wecomCorpid}_access_token`)
+      if (!retry) {
+        console.log('wecom send error:', status.data)
+        console.log('retry......')
+        await axios.get(`${TOOLBOX_BASE_URL}/wecom/send?string=${string}&user=${user}&type=${type}&retry=true`)
+      }
     }
     await redisclient.disconnect();
     response.send('')
