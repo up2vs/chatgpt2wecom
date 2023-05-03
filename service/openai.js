@@ -4,7 +4,7 @@ const { createClient } = require('redis')
 
 const touchOpenAI = async function (content, user) {
   console.log('touch openai content:' + content)
-  let messages = []
+  let messages = [] 
   const redisclient = createClient({ url: 'redis://127.0.0.1:6379' });
   redisclient.on('error', err => console.log('Redis Client Error', err));
   await redisclient.connect();
