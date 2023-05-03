@@ -25,7 +25,7 @@ router.all(
       const {
         xml: { FromUserName, Content, MsgType }
       } = await xml2js.parseStringPromise(message)
-      console.log(`Received content：${Content}`)
+      console.log(`Received content：${Content},From User${FromUserName[0]},Msg Type:${MsgType}`)
       do_reply(Content, FromUserName[0], MsgType)
       response.send('')
     } catch (error) {
