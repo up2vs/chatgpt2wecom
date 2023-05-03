@@ -1,12 +1,15 @@
-const { openAIKey } = require('../config')
+const { openAIKey, redisUrl } = require('../config')
 const { Configuration, OpenAIApi } = require('openai')
 const { createClient } = require('redis')
 
 const touchOpenAI = async function (user_message, user) {
   console.log('touch openai user_message:' + user_message)
-  
+
   let messages = []
-  const redisclient = createClient({ url: 'redis://127.0.0.1:6379' });
+  if (!redisUrl) {
+    redisUrl = 'redis://127.0.0.1:6379'
+  }
+  const redisclient = createClient({ url: redisUrl });
   redisclient.on('error', err => console.log('Redis Client Error', err));
   await redisclient.connect();
   let user_conversation = await redisclient.get(`${user}_conversation`);

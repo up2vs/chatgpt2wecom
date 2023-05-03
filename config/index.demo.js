@@ -6,6 +6,6 @@ module.exports = {
   wecomSecret: '', // 企业微信应用 app_secret
   openAIKey: '', // openAIKey
   port: null, // 服务运行端口号 port
+  redisUrl: 'redis://127.0.0.1:6379',
   WECOM_BASE_URL: 'https://qyapi.weixin.qq.com', // 企业微信应用 WECOM_BASE_URL (请保留该默认字段)
-  TOOLBOX_BASE_URL: 'http://127.0.0.1' // 本地请求路径 TOOLBOX_BASE_URL (请保留该默认字段)
 }

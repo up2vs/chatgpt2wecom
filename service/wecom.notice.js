@@ -1,6 +1,6 @@
 const express = require('express')
 const { decrypt, getSignature } = require('@wecom/crypto')
-const { wecomEncodingAESKey, wecomToken, TOOLBOX_BASE_URL } = require('../config')
+const { wecomEncodingAESKey, wecomToken } = require('../config')
 const xmlparser = require('express-xml-bodyparser')
 const xml2js = require('xml2js')
 const router = express.Router()
