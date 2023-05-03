@@ -1,18 +1,13 @@
-const express = require('express')
 const touchOpenAI = require('./openai.js')
 const { createClient } = require('redis')
-
 const {
   wecomAgentId,
   wecomCorpid,
   wecomSecret,
-  WECOM_BASE_URL,
-  TOOLBOX_BASE_URL
+  WECOM_BASE_URL
 } = require('../config')
 const axios = require('axios')
-const router = express.Router()
-var reply_msg = ''
-router.all('/wecom/send', async ({ query: { string, user, type, retry } }, response) => {
+const do_reply = async function (user_message, user, type, reply_message_cache) {
   try {
     const redisclient = createClient({ url: 'redis://127.0.0.1:6379' });
     redisclient.on('error', err => console.log('Redis Client Error', err));
@@ -27,13 +22,13 @@ router.all('/wecom/send', async ({ query: { string, user, type, retry } }, respo
       await redisclient.expire(`${wecomCorpid}_access_token`, 60 * 60 * 1.8)
     }
     console.log(`wx Access Token: ${access_token}`)
-    let message = ''
-    if (!reply_msg) {
-      message = await touchOpenAI(string, user)
+    let reply_message = ''
+    if (reply_message_cache) {
+      reply_message = reply_message_cache
     } else {
-      message = reply_msg
+      reply_message = await touchOpenAI(user_message, user)
     }
-    console.log(`Reply content: ${message}`)
+    console.log(`Reply content: ${reply_message}`)
     const status = await axios.post(
       `${WECOM_BASE_URL}/cgi-bin/message/send?access_token=${access_token}`,
       {
@@ -41,27 +36,22 @@ router.all('/wecom/send', async ({ query: { string, user, type, retry } }, respo
         msgtype: type,
         agentid: wecomAgentId,
         text: {
-          content: message
+          content: reply_message
         }
       }
     )
-    reply_msg = message
     console.log(`Send Status: ${JSON.stringify(status.data)}`)
     if ([40014, 42201, 42001, 42009, 42007].includes(status.data.errcode)) {
       await redisclient.del(`${wecomCorpid}_access_token`)
       console.log('wecom send error:', status.data)
-      if (!retry) {
+      if (!reply_message_cache) {
         console.log('retry......')
-        await axios.get(`${TOOLBOX_BASE_URL}/wecom/send?string=${string}&user=${user}&type=${type}&retry=true`)
+        await do_reply(user_message, user, type, reply_message)
       }
     }
     await redisclient.disconnect();
-    response.send('')
   } catch (error) {
-    //await redisclient.disconnect();
     console.log(error)
-    response.send('')
   }
-})
-
-module.exports = router
+}
+module.exports = do_reply

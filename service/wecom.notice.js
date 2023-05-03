@@ -5,7 +5,7 @@ const xmlparser = require('express-xml-bodyparser')
 const xml2js = require('xml2js')
 const router = express.Router()
 const axios = require('axios')
-
+const do_reply = require('./reply.js')
 router.all(
   '/wecom/notice',
   xmlparser({ trim: true, explicitArray: false }),
@@ -26,9 +26,7 @@ router.all(
         xml: { FromUserName, Content, MsgType }
       } = await xml2js.parseStringPromise(message)
       console.log(`Received content：${Content}`)
-      axios.get(
-        `${TOOLBOX_BASE_URL}/wecom/send?string=${Content}&user=${FromUserName[0]}&type=${MsgType}`
-      )
+      do_reply(Content, FromUserName[0], MsgType)
       response.send('')
     } catch (error) {
       console.log(error)
@@ -36,5 +34,4 @@ router.all(
     }
   }
 )
-
 module.exports = router
