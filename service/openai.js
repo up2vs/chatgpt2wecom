@@ -39,7 +39,7 @@ const touchOpenAI = async function (user_message, user) {
   messages.push(msg_row)
   let completionObject = {
     //model: 'gpt-3.5-turbo',
-    model: 'gpt-4-32k',
+    model: 'gpt-4',
     messages,
     user,
     // max_tokens: 4000
@@ -60,11 +60,11 @@ const touchOpenAI = async function (user_message, user) {
   if (reply_message && reply_message.content) {
     messages.push(reply_message)
     await redisclient.set(`${user}_conversation`, JSON.stringify(messages)) //保持会话
-    await redisclient.expire(`${user}_conversation`, 60*60*2) //会话有效期
+    await redisclient.expire(`${user}_conversation`, 60 * 60 * 2) //会话有效期
     await redisclient.disconnect();
     return reply_message.content
   } else {
-    await redisclient.set(`${user}_conversation`, null) //保持会话
+    await redisclient.expire(`${user}_conversation`, 0)
     await redisclient.disconnect();
     // return error.message
     return `${error.message}|请重复你的问题`
