@@ -39,7 +39,8 @@ const touchOpenAI = async function (user_message, user) {
   messages.push(msg_row)
   let completionObject = {
     //model: 'gpt-3.5-turbo',
-    model: 'gpt-4',
+    // model: 'gpt-4',
+    model: 'gpt-4-1106-preview',
     messages,
     user,
     // max_tokens: 4000
